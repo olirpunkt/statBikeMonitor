@@ -1,0 +1,161 @@
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta charset="utf-8">
+  <title>Pure CSS gauge v1.0</title>
+  <meta name="description" content="Pure CSS gauge">
+  <meta name="author" content="Otto Salminen">
+  <link rel="stylesheet" href="gauge.min.css?v=1.0">
+  <link rel="stylesheet" href="gauge-glossy.min.css?v=1.0">
+  <style>
+    body {
+      font-family: sans-serif;
+      background-color: #d8d8d8;
+    }
+
+    .gauge-example {
+      display: flex;
+      flex-wrap: wrap;
+      text-align: center;
+      justify-content: center;
+    }
+
+    .gauge-example>div {
+      background-color: #ffffff;
+      width: 48%;
+      min-width: 350px;
+      margin: 5px;
+      text-align: center;
+      padding-top: 40px;
+      line-height: 25px;
+      font-size: 14px;
+    }
+
+    .gauge-example>.gauge-description {
+      padding: 3em;
+      text-align: left;
+    }
+
+    .gauge-example>.gauge-description pre {
+      font-size: 12px;
+    }
+
+    .gauge {
+      margin: auto;
+    }
+
+    footer {
+      position: fixed;
+      left: 0;
+      bottom: 0;
+      width: 100%;
+      background-color: #c2c2c2;
+      text-align: center;
+      padding: 0.5em;
+      border-top: solid 1px #aeaeae;
+    }
+
+    footer a {
+      color: #0366d6;
+    }
+  </style>
+
+</head>
+
+<body style="background-color: #cac7e4"></body>
+<input style="width: 800px;height: 200px" type="text" placeholder="enter text here to send to server" id="eingabe"
+  onkeypress="myFunction(event)" /> -->
+<button onclick="clearlog()">Clear Logs</button>
+<div style="overflow:scroll; width: 800px; height: 200px; border: solid; border-radius: 9px" id="display"></div>
+<div id="demoGauge" class="gauge" style="
+--gauge-value:0;
+width:200px;
+height:200px;">
+                <div class="ticks">
+                  <div class="tithe" style="--gauge-tithe-tick:1;"></div>
+                  <div class="tithe" style="--gauge-tithe-tick:2;"></div>
+                  <div class="tithe" style="--gauge-tithe-tick:3;"></div>
+                  <div class="tithe" style="--gauge-tithe-tick:4;"></div>
+                  <div class="tithe" style="--gauge-tithe-tick:6;"></div>
+                  <div class="tithe" style="--gauge-tithe-tick:7;"></div>
+                  <div class="tithe" style="--gauge-tithe-tick:8;"></div>
+                  <div class="tithe" style="--gauge-tithe-tick:9;"></div>
+                  <div class="min"></div>
+                  <div class="mid"></div>
+                  <div class="max"></div>
+              </div>
+              <div class="tick-circle"></div>
+
+              <div class="needle">
+                  <div class="needle-head"></div>
+              </div>
+              <div class="labels">
+                  <div class="value-label"></div>
+              </div>
+          </div>
+
+          <p>
+            <label for="points">Value range 0-100</label><br />
+            <input type="range" id="gaugeValue-demoGauge" name="gaugeValue" min="0" max="100" value="0"
+                onInput="updateGauge('demoGauge', 0, 100);" onChange="updateGauge('demoGauge', 0, 100);" />
+        </p>
+
+<script>
+  
+  var sock = new WebSocket("ws://192.168.178.202:3000");  
+  var display = document.getElementById("display")
+
+  sock.onopen = function (event) {
+    
+    setTimeout(function () { sock.send('connection succeeded'); }, 1000);
+    display.innerHTML += "connection succeeded <br />";
+  };
+  sock.onmessage = function (event) {
+    console.log(event);
+    display.innerHTML += event.data + "<br />"; 
+    var randInt = getRandomInt(100)
+    updateGaugeExt('demoGauge', 0, 150, randInt);
+  }
+
+  function myFunction(event) {
+    
+    if (event.keyCode == 13) {     
+      var text = document.getElementById('eingabe').value;   
+      if (text != "") {     
+        
+        sock.send(text);    
+        display.innerHTML += "<strong>Me: </strong>" + text + "<br />";      
+        document.getElementById('eingabe').value = "";     
+      }
+      else {
+        console.log("empty string not sent")
+      }
+    }
+  }
+  function clearlog() {
+    display.innerHTML = "";
+  }
+</script>
+<script type="text/javascript">
+  //<![CDATA[
+  function updateGauge(id, min, max) {
+      const newGaugeDisplayValue = document.getElementById("gaugeValue-" + id).value;
+      const newGaugeValue = Math.floor(((newGaugeDisplayValue - min) / (max - min)) * 100);
+      document.getElementById(id).style.setProperty('--gauge-display-value', newGaugeDisplayValue);
+      document.getElementById(id).style.setProperty('--gauge-value', newGaugeValue);
+  }
+  function updateGaugeExt(id, min, max, value) {
+      
+      const newGaugeValue = Math.floor(((value - min) / (max - min)) * 100);
+      document.getElementById(id).style.setProperty('--gauge-display-value', value);
+      document.getElementById(id).style.setProperty('--gauge-value', newGaugeValue);
+  }
+  function getRandomInt(max) {
+  return Math.floor(Math.random() * Math.floor(max));
+}
+//]]>
+</script>
+</body>
+
+</html>
