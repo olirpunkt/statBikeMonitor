@@ -80,7 +80,7 @@ void getCadence() {
   if (cadenceCounterLocal != cadenceCounterOld) {
     cadenceCounterOld = cadenceCounterLocal;
     uint32_t cadenceInterval = t1Local - t0Local;
-    float cadence = 60000/cadenceInterval;
+    uint32_t cadence = 60000/cadenceInterval;
     Serial.print("Counter: ");Serial.print(cadenceCounterLocal);
     Serial.print(" Millis: ");Serial.println(t1Local);
     Serial.print(" took: ");Serial.println(cadenceInterval);
