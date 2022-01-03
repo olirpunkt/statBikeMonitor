@@ -63,6 +63,10 @@
 </head>
 
 <body style="background-color: #cac7e4"></body>
+<input style="width: 800px;height: 200px" type="text" placeholder="enter text here to send to server" id="eingabe"
+  onkeypress="myFunction(event)" /> -->
+<button onclick="clearlog()">Clear Logs</button>
+<div style="overflow:scroll; width: 800px; height: 200px; border: solid; border-radius: 9px" id="display"></div>
 <div id="demoGauge" class="gauge" style="
 --gauge-value:0;
 width:200px;
@@ -89,10 +93,12 @@ height:200px;">
                   <div class="value-label"></div>
               </div>
           </div>
-<p />
-<p />
-<div style="overflow:scroll; width: 800px; height: 200px; border: solid; border-radius: 9px" id="display"></div>
 
+          <p>
+            <label for="points">Value range 0-100</label><br />
+            <input type="range" id="gaugeValue-demoGauge" name="gaugeValue" min="0" max="100" value="0"
+                onInput="updateGauge('demoGauge', 0, 100);" onChange="updateGauge('demoGauge', 0, 100);" />
+        </p>
 
 <script>
   
