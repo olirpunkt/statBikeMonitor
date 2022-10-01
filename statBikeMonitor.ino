@@ -21,6 +21,8 @@ WebSocketClient webSocketClient;
 
 unsigned long interval=300; //interval for sending data to the websocket server in ms
 
+//a comment
+
 // Use WiFiClient class to create TCP connections
 WiFiClient client;
 
