@@ -38,4 +38,7 @@ s.on('connection', function (ws, req) {
   
   console.log("new client connected");
 });
-server.listen(3000);
+server.listen(8088, '0.0.0.0', () => {
+    console.log(`Server is running`);
+});
+

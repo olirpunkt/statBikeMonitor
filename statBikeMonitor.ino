@@ -1,5 +1,6 @@
 #include <ESP8266WiFi.h>
 #include <WebSocketClient.h>
+#include <ArduinoJson.h>
 #include "config.h"
 
 /*
@@ -13,9 +14,10 @@ char* host = "";
 
 boolean handshakeFailed=0;
 String data= "";
+StaticJsonDocument<200> doc;
 
 char path[] = "/";
-const int espport= 3000;
+const int espport= 8088;
 
 WebSocketClient webSocketClient;
 
@@ -85,10 +87,11 @@ void setup() {
   attachInterrupt(digitalPinToInterrupt(speedPin),speedISR,RISING);
 
   wsconnect();
-
+  
 }
 
 void getCadence() {
+  //Serial.println("getCadence");
   static uint16_t cadenceCounterOld = 0;
   uint32_t cadenceCounterLocal;
   uint32_t t1Local;
@@ -103,7 +106,13 @@ void getCadence() {
     Serial.println(cadence_t1 - cadence_t0);
     Serial.print("RPM: ");
     Serial.println(rpm);
-    webSocketClient.sendData((String) rpm);
+    doc["sensor"] = "rpm";
+    doc["value"] = rpm;
+    String jsonString;
+    
+    serializeJson(doc, jsonString);
+    webSocketClient.sendData(jsonString);
+
     cadenceChanged = false;
   } /*else {
     if (millis() - cadence_t1 > 10000) {
@@ -131,7 +140,7 @@ void wsconnect(){
    
    if(handshakeFailed){
     handshakeFailed=0;
-    ESP.restart();
+      ESP.restart();
     }
     handshakeFailed=1;
   }
@@ -143,11 +152,11 @@ void wsconnect(){
   } else {
     
     Serial.println("Handshake failed.");
-   delay(4000);  
+    delay(4000);  
    
    if(handshakeFailed){
     handshakeFailed=0;
-    ESP.restart();
+      ESP.restart();
     }
     handshakeFailed=1;
   }
