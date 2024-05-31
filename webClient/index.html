@@ -12,7 +12,8 @@
 
 <p />
 <p />
-<div id='myDiv'><!-- Plotly chart will be drawn inside this DIV --></div>
+<div id='crankDIV'><!-- Plotly chart will be drawn inside this DIV --></div>
+<div id='speedDIV'><!-- Plotly chart will be drawn inside this DIV --></div>
 <div style="overflow:scroll; width: 800px; height: 200px; border: solid; border-radius: 9px" id="display"></div>
 
 <script>
@@ -20,6 +21,9 @@
     var sock = new WebSocket("ws://localhost:8088");  
     var display = document.getElementById("display")
     var oldRPM = 0;
+    var oldSpeed = 0.0;
+    var RPM = 0;
+    var Speed = 0;
   
     sock.onopen = function (event) {
       
@@ -32,9 +36,20 @@
       let jsonString = JSON.parse(event.data);
       console.log(jsonString);
       //display.innerHTML += event.data + "<br />"; 
-      display.innerHTML += jsonString.rpm + "<br />";
-      Plotly.update('myDiv', {value:jsonString.rpm, delta: {reference: oldRPM}});
-      oldRPM = jsonString.rpm;
+      display.innerHTML += jsonString.rpm + " " + jsonString.speed + "<br />";
+      RPM = jsonString.rpm;
+      Speed = jsonString.speed;
+      if (RPM != oldRPM) {
+        Plotly.update('crankDIV', {value:jsonString.rpm, delta: {reference: oldRPM}});
+        oldRPM = jsonString.rpm;
+      }
+      if (Speed != oldSpeed) {
+        Plotly.update('speedDIV', {value:jsonString.speed, delta: {reference: oldSpeed}});
+        oldSpeed = jsonString.speed;
+      }
+      
+         
+      
       //updateGaugeExt('demoGauge', 0, 150, event.data);
     }
   
@@ -58,23 +73,43 @@
     }*/
 
     var data = [
-	{
-		domain: { x: [0, 1], y: [0, 1] },
-		value: 90,
-		title: { text: "Speed" },
-		type: "indicator",
-		mode: "gauge+number+delta",
-        gauge: {
-            axis: {range: [null, 180]},
-            steps: [ 
-                { range: [0,100], color: "lightgray"}  ,
-                { range: [100,180], color: "lightblue" }  
-            ]
-        }
-	}
-];
-    var layout = { width: 600, height: 500, margin: { t: 0, b: 0 } };
-    Plotly.newPlot('myDiv', data, layout);
+    {
+      domain: { x: [0, 1], y: [0, 1] },
+      value: 90,
+      title: { text: "RPM" },
+      type: "indicator",
+      mode: "gauge+number+delta",
+          gauge: {
+              axis: {range: [null, 180]},
+              steps: [ 
+                  { range: [0,100], color: "lightgray"}  ,
+                  { range: [100,180], color: "lightblue" }  
+              ]
+          }
+    }
+  ];
+  var layout = { width: 600, height: 500, margin: { t: 0, b: 0 } };
+  Plotly.newPlot('crankDIV', data, layout);
+
+  var data = [
+    {
+      domain: { x: [0, 1], y: [0, 1] },
+      value: 5,
+      title: { text: "Speed" },
+      type: "indicator",
+      mode: "gauge+number+delta",
+          gauge: {
+              axis: {range: [null, 75]},
+              steps: [ 
+                  { range: [0,25], color: "lightgray"}  ,
+                  { range: [25,75], color: "lightblue" }  
+              ]
+          }
+    }
+  ];
+
+  Plotly.newPlot('speedDIV', data, layout);
+
   </script>
 
 </body>
