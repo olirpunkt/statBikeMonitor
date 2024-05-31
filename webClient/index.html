@@ -5,151 +5,77 @@
   <meta charset="utf-8">
   <title>StatBikeMonitor</title>
     <meta name="author" content="Oliver Roll">
-  <link rel="stylesheet" href="gauge.min.css?v=1.0">
-  <link rel="stylesheet" href="gauge-glossy.min.css?v=1.0">
-  <style>
-    body {
-      font-family: sans-serif;
-      background-color: #d8d8d8;
-    }
-
-    .gauge-example {
-      display: flex;
-      flex-wrap: wrap;
-      text-align: center;
-      justify-content: center;
-    }
-
-    .gauge-example>div {
-      background-color: #ffffff;
-      width: 48%;
-      min-width: 350px;
-      margin: 5px;
-      text-align: center;
-      padding-top: 40px;
-      line-height: 25px;
-      font-size: 14px;
-    }
-
-    .gauge-example>.gauge-description {
-      padding: 3em;
-      text-align: left;
-    }
-
-    .gauge-example>.gauge-description pre {
-      font-size: 12px;
-    }
-
-    .gauge {
-      margin: auto;
-    }
-
-    footer {
-      position: fixed;
-      left: 0;
-      bottom: 0;
-      width: 100%;
-      background-color: #c2c2c2;
-      text-align: center;
-      padding: 0.5em;
-      border-top: solid 1px #aeaeae;
-    }
-
-    footer a {
-      color: #0366d6;
-    }
-  </style>
-
+    <script src='https://cdn.plot.ly/plotly-2.32.0.min.js'></script>
 </head>
 
-<body style="background-color: #cac7e4"></body>
-<div id="demoGauge" class="gauge" style="
---gauge-value:0;
-width:200px;
-height:200px;">
-                <div class="ticks">
-                  <div class="tithe" style="--gauge-tithe-tick:1;"></div>
-                  <div class="tithe" style="--gauge-tithe-tick:2;"></div>
-                  <div class="tithe" style="--gauge-tithe-tick:3;"></div>
-                  <div class="tithe" style="--gauge-tithe-tick:4;"></div>
-                  <div class="tithe" style="--gauge-tithe-tick:6;"></div>
-                  <div class="tithe" style="--gauge-tithe-tick:7;"></div>
-                  <div class="tithe" style="--gauge-tithe-tick:8;"></div>
-                  <div class="tithe" style="--gauge-tithe-tick:9;"></div>
-                  <div class="min"></div>
-                  <div class="mid"></div>
-                  <div class="max"></div>
-              </div>
-              <div class="tick-circle"></div>
+<body style="background-color: #cac7e4">
 
-              <div class="needle">
-                  <div class="needle-head"></div>
-              </div>
-              <div class="labels">
-                  <div class="value-label"></div>
-              </div>
-          </div>
 <p />
 <p />
+<div id='myDiv'><!-- Plotly chart will be drawn inside this DIV --></div>
 <div style="overflow:scroll; width: 800px; height: 200px; border: solid; border-radius: 9px" id="display"></div>
-
 
 <script>
   
-  var sock = new WebSocket("ws://localhost:8088");  
-  var display = document.getElementById("display")
-
-  sock.onopen = function (event) {
-    
-    setTimeout(function () { sock.send('connection succeeded'); }, 1000);
-    display.innerHTML += "connection succeeded <br />";
-  };
-  sock.onmessage = function (event) {
-    console.log(event);
-    display.innerHTML += event.data + "<br />"; 
-    var randInt = getRandomInt(100)
-    //updateGaugeExt('demoGauge', 0, 150, randInt);
-    updateGaugeExt('demoGauge', 0, 150, event.data);
-  }
-
-  function myFunction(event) {
-    
-    if (event.keyCode == 13) {     
-      var text = document.getElementById('eingabe').value;   
-      if (text != "") {     
-        
-        sock.send(text);    
-        display.innerHTML += "<strong>Me: </strong>" + text + "<br />";      
-        document.getElementById('eingabe').value = "";     
-      }
-      else {
-        console.log("empty string not sent")
+    var sock = new WebSocket("ws://localhost:8088");  
+    var display = document.getElementById("display")
+    var oldRPM = 0;
+  
+    sock.onopen = function (event) {
+      
+      setTimeout(function () { sock.send('webdisplay connection succeeded'); }, 1000);
+      display.innerHTML += "connection succeeded <br />";
+    };
+    sock.onmessage = function (event) {
+      //console.log(event);
+      //console.log(event.data);
+      let jsonString = JSON.parse(event.data);
+      console.log(jsonString);
+      //display.innerHTML += event.data + "<br />"; 
+      display.innerHTML += jsonString.rpm + "<br />";
+      Plotly.update('myDiv', {value:jsonString.rpm, delta: {reference: oldRPM}});
+      oldRPM = jsonString.rpm;
+      //updateGaugeExt('demoGauge', 0, 150, event.data);
+    }
+  
+    /*function myFunction(event) {
+      
+      if (event.keyCode == 13) {     
+        var text = document.getElementById('eingabe').value;   
+        if (text != "") {     
+          
+          sock.send(text);    
+          display.innerHTML += "<strong>Me: </strong>" + text + "<br />";      
+          document.getElementById('eingabe').value = "";     
+        }
+        else {
+          console.log("empty string not sent")
+        }
       }
     }
-  }
-  function clearlog() {
-    display.innerHTML = "";
-  }
-</script>
-<script type="text/javascript">
-  //<![CDATA[
-  function updateGauge(id, min, max) {
-      const newGaugeDisplayValue = document.getElementById("gaugeValue-" + id).value;
-      const newGaugeValue = Math.floor(((newGaugeDisplayValue - min) / (max - min)) * 100);
-      document.getElementById(id).style.setProperty('--gauge-display-value', newGaugeDisplayValue);
-      document.getElementById(id).style.setProperty('--gauge-value', newGaugeValue);
-  }
-  function updateGaugeExt(id, min, max, value) {
-      
-      const newGaugeValue = Math.floor(((value - min) / (max - min)) * 100);
-      document.getElementById(id).style.setProperty('--gauge-display-value', value);
-      document.getElementById(id).style.setProperty('--gauge-value', newGaugeValue);
-  }
-  function getRandomInt(max) {
-  return Math.floor(Math.random() * Math.floor(max));
-}
-//]]>
-</script>
-</body>
+    function clearlog() {
+      display.innerHTML = "";
+    }*/
 
+    var data = [
+	{
+		domain: { x: [0, 1], y: [0, 1] },
+		value: 90,
+		title: { text: "Speed" },
+		type: "indicator",
+		mode: "gauge+number+delta",
+        gauge: {
+            axis: {range: [null, 180]},
+            steps: [ 
+                { range: [0,100], color: "lightgray"}  ,
+                { range: [100,180], color: "lightblue" }  
+            ]
+        }
+	}
+];
+    var layout = { width: 600, height: 500, margin: { t: 0, b: 0 } };
+    Plotly.newPlot('myDiv', data, layout);
+  </script>
+
+</body>
 </html>

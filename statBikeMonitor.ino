@@ -106,8 +106,9 @@ void getCadence() {
     Serial.println(cadence_t1 - cadence_t0);
     Serial.print("RPM: ");
     Serial.println(rpm);
-    doc["sensor"] = "rpm";
-    doc["value"] = rpm;
+    /*doc["sensor"] = "rpm";
+    doc["value"] = rpm;*/
+    doc["rpm"] = rpm;
     String jsonString;
     
     serializeJson(doc, jsonString);

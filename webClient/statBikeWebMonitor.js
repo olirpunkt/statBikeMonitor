@@ -22,12 +22,21 @@ app.get('/', function (req, res) {
 });
 
 s.on('connection', function (ws, req) {
-
+  console.log("new client connected");
   ws.on('message', function (message) {
+    let jsonString = "";
+    try {
+      jsonString = JSON.parse(message);
+    } catch (e) {
+      console.error(e)
+    }
     console.log("Received: " + message);
     s.clients.forEach(function (client) { 
       if (client != ws && client.readyState) { 
-        client.send(message);
+        //client.send(message);
+        if (jsonString != "") {
+          client.send(JSON.stringify(jsonString));
+        }
       }
     });
     
@@ -36,7 +45,6 @@ s.on('connection', function (ws, req) {
     console.log("lost one client");
   });
   
-  console.log("new client connected");
 });
 server.listen(8088, '0.0.0.0', () => {
     console.log(`Server is running`);
