@@ -14,16 +14,20 @@
 <p />
 <div id='crankDIV'><!-- Plotly chart will be drawn inside this DIV --></div>
 <div id='speedDIV'><!-- Plotly chart will be drawn inside this DIV --></div>
+<div id='distance' style="width:40px;height:40px;border:solid;"></div>
 <div style="overflow:scroll; width: 800px; height: 200px; border: solid; border-radius: 9px" id="display"></div>
 
 <script>
   
-    var sock = new WebSocket("ws://hpelite:8088");  
+    var sock = new WebSocket("ws://homepi:8090");  
     var display = document.getElementById("display")
+    var distDisplay = document.getElementById("distance");
     var oldRPM = 0;
     var oldSpeed = 0.0;
     var RPM = 0;
     var Speed = 0;
+    var distance = 0;
+    var oldDistance = 0;
   
     sock.onopen = function (event) {
       
@@ -39,6 +43,12 @@
       display.innerHTML += jsonString.rpm + " " + jsonString.speed + "<br />";
       RPM = jsonString.rpm;
       Speed = jsonString.speed;
+      distance = jsonString.distance;
+
+      if (distance > oldDistance) {
+        distDisplay.innerHTML = "Dist: " + distance;
+      }
+
       if (RPM != oldRPM) {
         Plotly.update('crankDIV', {value:jsonString.rpm, delta: {reference: oldRPM}});
         oldRPM = jsonString.rpm;

@@ -18,7 +18,7 @@ StaticJsonDocument<200> doc;
 String jsonString;
 
 char path[] = "/";
-const int espport = 8088;
+const float wheel_circ = 2.18;
 
 WebSocketClient webSocketClient;
 
@@ -43,10 +43,11 @@ bool cadenceChanged = false;
 
 volatile uint32_t speed_t0 = 0;
 volatile uint32_t speed_t1 = 0;
-volatile uint32_t speedCounter = 0;
+volatile uint32_t distanceCounter = 0;
 int rpm_wheel = 0;
 bool speedChanged = false;
 float speed = 0;
+float distance = 0;
 
 ICACHE_RAM_ATTR void cadenceISR() {
   if (millis() - cadence_t1 >= bounceTime) {
@@ -62,7 +63,7 @@ ICACHE_RAM_ATTR void speedISR() {
   if (millis() - speed_t1 >= bounceTime) {
     speed_t0 = speed_t1;
     speed_t1 = millis();
-    speedCounter++;
+    distanceCounter++;
     speedChanged = true;
     //Serial.println("Speed changed");
   }
@@ -108,8 +109,8 @@ void getSpeed() {
   rpm_wheel = 60000 / (speed_t1 - speed_t0);
   Serial.print("RPM_wheel: ");
   Serial.println(rpm_wheel);
-  speed = rpm_wheel * 2.18;  //rounds per minute * umfang = strecke/minute
-  speed = speed / 16.66667;
+  speed = rpm_wheel * wheel_circ;  //rounds per minute * umfang = meter/minute
+  speed = speed / 16.66667; //in kph
   Serial.print("Speed: ");
   Serial.println(speed);
   sei();
@@ -124,7 +125,9 @@ void getCadence() {
   sei();
 }
 
-
+void getDistance() {
+  distance = distanceCounter * wheel_circ;
+}
 
 void loop() {
   if (cadenceChanged) {
@@ -136,6 +139,8 @@ void loop() {
     }
   if (speedChanged) {
     getSpeed();
+    getDistance();
+    doc["distance"] = distance;
     doc["speed"] = speed;    
     serializeJson(doc, jsonString);
     webSocketClient.sendData(jsonString);
